@@ -1,0 +1,317 @@
+/* ---------------------------------------------------------------
+   Design tokens
+   Palette is a modernized, muted version of the Fitzgerald key —
+   the real color-coding convention used on AAC boards to group
+   words by grammatical role (pronouns / verbs / nouns / etc).
+   ------------------------------------------------------------- */
+:root {
+  --color-bg: #f7f4ee;
+  --color-surface: #ffffff;
+  --color-ink: #2a2622;
+  --color-ink-soft: #6b645a;
+  --color-border: #e4ddd0;
+
+  --color-pronoun: #a97f2a;
+  --color-pronoun-bg: #f3e9d2;
+
+  --color-verb: #55704c;
+  --color-verb-bg: #e4ebdf;
+
+  --color-noun: #8b5a3c;
+  --color-noun-bg: #efe0d3;
+
+  --color-descriptor: #43617e;
+  --color-descriptor-bg: #dfe7ee;
+
+  --color-social: #8f4a58;
+  --color-social-bg: #f1e1e4;
+
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-body: 'Atkinson Hyperlegible', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --shadow-soft: 0 1px 2px rgba(42, 38, 34, 0.06), 0 2px 8px rgba(42, 38, 34, 0.05);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  padding: 0;
+  margin: 0;
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+/* ---------------------------------------------------------------
+   Layout
+   ------------------------------------------------------------- */
+.app {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 20px 20px 64px;
+}
+
+.app-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.app-title {
+  font-family: var(--font-display);
+  font-size: 32px;
+  font-weight: 700;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.app-subtitle {
+  margin: 4px 0 0;
+  color: var(--color-ink-soft);
+  font-size: 14px;
+}
+
+.reset-link {
+  background: none;
+  border: none;
+  color: var(--color-ink-soft);
+  font-size: 12px;
+  font-family: var(--font-mono);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  padding: 4px;
+  white-space: nowrap;
+}
+
+.reset-link:hover {
+  color: var(--color-ink);
+}
+
+/* ---------------------------------------------------------------
+   Sentence strip
+   ------------------------------------------------------------- */
+.sentence-strip {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 18px 20px;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow-soft);
+}
+
+.sentence-words {
+  min-height: 40px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.sentence-placeholder {
+  color: var(--color-ink-soft);
+  font-style: italic;
+  font-size: 15px;
+}
+
+.sentence-word {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 600;
+  padding: 2px 4px;
+}
+
+.sentence-actions {
+  display: flex;
+  gap: 8px;
+  border-top: 1px solid var(--color-border);
+  padding-top: 12px;
+}
+
+.action-btn {
+  border: 1px solid var(--color-border);
+  background: var(--color-bg);
+  color: var(--color-ink);
+  border-radius: var(--radius-md);
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  transition: transform 0.1s ease, background 0.15s ease;
+}
+
+.action-btn:not(:disabled):hover {
+  background: var(--color-border);
+}
+
+.action-btn:not(:disabled):active {
+  transform: scale(0.97);
+}
+
+.action-speak {
+  margin-left: auto;
+  background: var(--color-ink);
+  color: var(--color-bg);
+  border-color: var(--color-ink);
+}
+
+.action-speak:not(:disabled):hover {
+  background: #45403a;
+}
+
+/* ---------------------------------------------------------------
+   Suggestion row (the dynamic, predictive part)
+   ------------------------------------------------------------- */
+.suggestion-row {
+  margin-bottom: 28px;
+}
+
+.suggestion-label {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-ink-soft);
+  margin-bottom: 10px;
+}
+
+.suggestion-tiles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.suggestion-empty {
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+}
+
+.suggestion-empty-text {
+  margin: 0;
+  font-size: 13px;
+  color: var(--color-ink-soft);
+}
+
+/* ---------------------------------------------------------------
+   Category sections (the stable grid — never reordered)
+   ------------------------------------------------------------- */
+.category-list {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.category-section {
+  border-left: 3px solid var(--cat-color);
+  padding-left: 14px;
+}
+
+.category-title {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--cat-color);
+  margin: 0 0 10px;
+}
+
+.category-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* ---------------------------------------------------------------
+   Tile button
+   ------------------------------------------------------------- */
+.tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-width: 84px;
+  min-height: 84px;
+  padding: 10px 12px;
+  background: var(--tile-bg);
+  border: 1px solid rgba(42, 38, 34, 0.08);
+  border-radius: var(--radius-md);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.tile:hover {
+  box-shadow: var(--shadow-soft);
+}
+
+.tile:active {
+  transform: scale(0.95);
+}
+
+.tile-icon {
+  font-size: 26px;
+  line-height: 1;
+}
+
+.tile-label {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--tile-color);
+  text-align: center;
+}
+
+.tile-reason {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--color-ink-soft);
+  position: absolute;
+  bottom: -18px;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  background: var(--color-bg);
+  padding: 1px 6px;
+  border-radius: 20px;
+  border: 1px solid var(--color-border);
+}
+
+/* ---------------------------------------------------------------
+   Responsive
+   ------------------------------------------------------------- */
+@media (max-width: 480px) {
+  .app {
+    padding: 16px 14px 48px;
+  }
+
+  .app-title {
+    font-size: 26px;
+  }
+
+  .tile {
+    min-width: 74px;
+    min-height: 74px;
+  }
+}
