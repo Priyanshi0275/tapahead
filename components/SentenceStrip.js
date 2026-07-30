@@ -1,6 +1,13 @@
 'use client';
 
-export default function SentenceStrip({ words, onSpeak, onBackspace, onClear }) {
+export default function SentenceStrip({
+  words,
+  onSpeak,
+  onBackspace,
+  onClear,
+  isThinking,
+  naturalizedPreview,
+}) {
   return (
     <div className="sentence-strip">
       <div className="sentence-words">
@@ -16,6 +23,16 @@ export default function SentenceStrip({ words, onSpeak, onBackspace, onClear }) 
           ))
         )}
       </div>
+
+      {naturalizedPreview && (
+        <p className="naturalized-preview">
+          <span className="naturalized-icon" aria-hidden="true">
+            🔊
+          </span>
+          {naturalizedPreview}
+        </p>
+      )}
+
       <div className="sentence-actions">
         <button
           type="button"
@@ -39,10 +56,10 @@ export default function SentenceStrip({ words, onSpeak, onBackspace, onClear }) 
           type="button"
           className="action-btn action-speak"
           onClick={onSpeak}
-          disabled={words.length === 0}
+          disabled={words.length === 0 || isThinking}
           aria-label="Speak sentence"
         >
-          🔊 Speak
+          {isThinking ? 'Thinking…' : '🔊 Speak'}
         </button>
       </div>
     </div>

@@ -5,6 +5,28 @@ how you talk**, so the words you need next are predicted and surfaced
 automatically — without ever moving the main grid (which would break the
 muscle-memory tapping that real AAC users rely on).
 
+It also uses a real LLM to turn telegraphic taps like `I want water` into
+a natural spoken sentence like *"I'd like some water, please"* — because
+speaking word-for-word sounds robotic, which is a real, documented
+frustration for AAC users trying to have a normal conversation.
+
+## Features
+
+- **Predictive suggestion row** — a small, statistics-driven ranking engine
+  (see "How the prediction works" below) — no LLM involved here, this is
+  pure on-device logic.
+- **AI sentence naturalization** — an LLM call (Groq, `llama-3.1-8b-instant`,
+  the same setup used in MindTrace) turns your tapped words into a natural
+  sentence before it's spoken aloud. Fails safe: if the API key is missing,
+  the request times out, or anything goes wrong, it just speaks your raw
+  tapped words instead — it never blocks you from being heard.
+- **81 vocabulary tiles** across 6 categories, including a dedicated
+  "Connecting Words" category (am, is, the, to, and, with, etc.) so
+  sentences can flow more naturally.
+- **Male/female voice toggle** plus an exact-voice dropdown, since the
+  Web Speech API doesn't officially label voice gender — we guess from
+  common voice names and let you override it.
+
 ## How the prediction works
 
 A small "Suggested for you" row above the main grid is ranked live using
@@ -34,16 +56,30 @@ cd tapahead
 # 2. Install dependencies
 npm install
 
-# 3. Run the dev server
+# 3. Get a free Groq API key (needed for the AI sentence naturalization)
+#    -> https://console.groq.com/keys
+#    Copy .env.local.example to .env.local and paste your key in:
+cp .env.local.example .env.local
+# then edit .env.local and replace "your_groq_api_key_here"
+
+# 4. Run the dev server
 npm run dev
 ```
 
 Open **http://localhost:3000** in your browser. Tap tiles, build a
-sentence, hit "Speak" (uses your browser's built-in text-to-speech, no API
-key needed). Tap the same sequences a few times and watch the "Suggested
-for you" row start predicting your next word.
+sentence, hit "Speak." Without a Groq key, it just speaks your raw tapped
+words (still fully functional) — with a key, it naturalizes the sentence
+first and shows a preview line above the Speak button. Tap the same
+sequences a few times and watch the "Suggested for you" row start
+predicting your next word.
 
 ## Deploy it to Vercel (so you have a live link to submit)
+
+**Important:** your `.env.local` file stays on your computer only — it is
+never pushed to GitHub or read by Vercel automatically. You need to add
+`GROQ_API_KEY` as an environment variable in Vercel too, or the deployed
+app will just speak raw tapped words (still works, just without the AI
+naturalization).
 
 **Option A — no GitHub needed, fastest (Vercel CLI):**
 
@@ -56,8 +92,22 @@ vercel --prod
 
 It'll ask a few questions — accept the defaults (it auto-detects Next.js).
 After it finishes, it prints your live URL, e.g.
-`https://tapahead-yourname.vercel.app`. That's the link you paste into the
-submission form.
+`https://tapahead-yourname.vercel.app`.
+
+Then add your Groq key so the deployed version has it too:
+
+```bash
+vercel env add GROQ_API_KEY
+```
+
+Paste your key when prompted, select all environments (Production,
+Preview, Development), then redeploy so it picks up the new variable:
+
+```bash
+vercel --prod
+```
+
+That final URL is the link you paste into the submission form.
 
 **Option B — via GitHub (if you want the project on GitHub too):**
 
@@ -73,30 +123,36 @@ submission form.
    ```
 3. Go to [vercel.com/new](https://vercel.com/new), click **Import Project**,
    pick your `tapahead` repo.
-4. Leave all settings as default (Vercel auto-detects Next.js) → click
-   **Deploy**.
-5. Vercel gives you a live URL in about a minute.
+4. Before clicking Deploy, expand **Environment Variables** and add:
+   - Key: `GROQ_API_KEY`
+   - Value: your key from [console.groq.com/keys](https://console.groq.com/keys)
+5. Click **Deploy**. Vercel gives you a live URL in about a minute.
 
-Either way, no environment variables or extra setup are needed — everything
-runs client-side.
+The suggestion engine and tap history run entirely client-side (no setup
+needed for those) — the Groq key is only needed for the AI sentence
+naturalization step.
 
 ## Project structure
 
 ```
 tapahead/
 ├── app/
+│   ├── api/naturalize/route.js  # LLM call (Groq) that naturalizes tapped words
 │   ├── layout.js       # root layout, loads fonts
-│   ├── page.js         # main app — wires state, ranking, and UI together
+│   ├── page.js         # main app — wires state, ranking, voice, and UI together
 │   └── globals.css     # design tokens + all styling
 ├── components/
-│   ├── SentenceStrip.js    # the sentence-building bar + Speak/Clear/Backspace
+│   ├── SentenceStrip.js    # sentence-building bar + naturalized preview + Speak
 │   ├── SuggestionRow.js    # the dynamic, predicted-tiles row
 │   ├── CategorySection.js  # one color-coded category block (stable grid)
-│   └── TileButton.js       # a single tappable tile
+│   ├── TileButton.js       # a single tappable tile
+│   └── VoiceSettings.js    # male/female toggle + exact voice picker
 ├── lib/
-│   ├── tiles.js         # the vocabulary dataset (Fitzgerald-key categories)
-│   ├── ranking.js        # THE CORE LOGIC — scoring, ranking, tap recording
-│   └── storage.js        # localStorage load/save/reset helpers
+│   ├── tiles.js         # vocabulary dataset (Fitzgerald-key categories)
+│   ├── ranking.js        # THE CORE STATS LOGIC — scoring, ranking, tap recording
+│   ├── storage.js        # localStorage load/save/reset helpers
+│   └── voices.js          # heuristic male/female voice classification
+├── .env.local.example    # copy to .env.local and add your Groq key
 └── README.md
 ```
 

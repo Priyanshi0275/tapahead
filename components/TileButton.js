@@ -4,18 +4,21 @@ import { CATEGORIES } from '@/lib/tiles';
 
 export default function TileButton({ tile, onTap, showReason }) {
   const cat = CATEGORIES[tile.category];
+  const isConnector = tile.category === 'connector';
 
   return (
     <button
       type="button"
-      className="tile"
+      className={isConnector ? 'tile tile-connector' : 'tile'}
       style={{ '--tile-color': cat.color, '--tile-bg': cat.bg }}
       onClick={() => onTap(tile)}
       aria-label={tile.label}
     >
-      <span className="tile-icon" aria-hidden="true">
-        {tile.icon}
-      </span>
+      {!isConnector && (
+        <span className="tile-icon" aria-hidden="true">
+          {tile.icon}
+        </span>
+      )}
       <span className="tile-label">{tile.label}</span>
       {showReason && tile.reason && (
         <span className="tile-reason">
