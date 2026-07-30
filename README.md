@@ -137,9 +137,10 @@ naturalization step.
 ```
 tapahead/
 ├── app/
+│   ├── page.js          # landing page (/) — explains the problem, links to /board
+│   ├── board/page.js    # the actual working board (/board)
 │   ├── api/naturalize/route.js  # LLM call (Groq) that naturalizes tapped words
 │   ├── layout.js       # root layout, loads fonts
-│   ├── page.js         # main app — wires state, ranking, voice, and UI together
 │   └── globals.css     # design tokens + all styling
 ├── components/
 │   ├── SentenceStrip.js    # sentence-building bar + naturalized preview + Speak
@@ -155,6 +156,10 @@ tapahead/
 ├── .env.local.example    # copy to .env.local and add your Groq key
 └── README.md
 ```
+
+The link you submit is your root domain (e.g. `https://tapahead-yourname.vercel.app`)
+— visitors land on the explainer page first, then click through to `/board`
+to actually use it.
 
 ## If you want to extend it further
 
