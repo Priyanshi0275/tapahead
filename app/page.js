@@ -1,45 +1,30 @@
-'use client';
-
 import Link from 'next/link';
-import TileButton from '@/components/TileButton';
-
-const previewSuggestions = [
-  { id: 'water', label: 'water', category: 'noun', icon: '💧', reason: { icon: '→', text: 'after "want"' } },
-  { id: 'please', label: 'please', category: 'social', icon: '🤲', reason: { icon: '⭐', text: 'frequent' } },
-  { id: 'help', label: 'help', category: 'verb', icon: '🆘', reason: { icon: '🕐', text: 'morning' } },
-];
-
-function noop() {}
+import Mascot from '@/components/Mascot';
 
 export default function Landing() {
   return (
     <main className="landing">
       <div className="landing-inner">
         <div className="landing-copy">
-          <span className="landing-eyebrow">Communication support</span>
+          <span className="landing-eyebrow">Meet Tapper</span>
           <h1 className="landing-title">TapAhead</h1>
           <p className="landing-subtitle">
-            A communication board that learns how you talk.
+            The communication board that keeps up with you.
           </p>
           <p className="landing-body">
-            Most AAC boards never change — the same tap sequence, every
-            single time, even for things you say ten times a day. TapAhead
-            quietly learns your patterns and brings the words you need next
-            closer to your fingers, without ever moving the ones you already
-            know by heart.
+            Most AAC boards never change — the same taps, every single time,
+            even for things you say ten times a day. TapAhead learns your
+            patterns and brings your next word closer, without ever losing
+            the tiles you already know by heart.
           </p>
           <Link href="/board" className="landing-cta">
-            Start Using TapAhead →
+            Start Tapping →
           </Link>
         </div>
 
-        <div className="landing-preview" aria-hidden="true">
-          <span className="preview-label">Suggested for you</span>
-          <div className="preview-tiles">
-            {previewSuggestions.map((tile) => (
-              <TileButton key={tile.id} tile={tile} onTap={noop} showReason />
-            ))}
-          </div>
+        <div className="landing-visual">
+          <div className="landing-blob" aria-hidden="true" />
+          <Mascot className="landing-mascot" />
         </div>
       </div>
     </main>
