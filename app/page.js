@@ -1,6 +1,6 @@
 import Link from 'next/link';
-
-const demoTiles = ['want', 'water', 'please', 'more'];
+import DemoAnimation from '@/components/DemoAnimation';
+import Reveal from '@/components/Reveal';
 
 const coreGridWords = ['I', 'want', 'water', 'more', 'help', 'please', 'yes', 'no'];
 
@@ -74,37 +74,14 @@ export default function Landing() {
         </span>
         <h2 className="section-title">Three taps. One natural sentence.</h2>
 
-        <div className="demo-card">
-          <div className="demo-panel">
-            <span className="demo-label">Your sentence</span>
-            <p className="demo-sentence">I want water</p>
-
-            <div className="demo-spoken">
-              <span className="demo-label">Spoken aloud</span>
-              <p className="demo-quote">&ldquo;I&apos;d like some water, please.&rdquo;</p>
-            </div>
-          </div>
-
-          <div className="demo-footer">
-            <div>
-              <span className="demo-label" style={{ marginBottom: 8 }}>
-                Predicted next
-              </span>
-              <div className="demo-predicted-tiles">
-                {demoTiles.map((t) => (
-                  <span key={t} className="pill-tile">{t}</span>
-                ))}
-              </div>
-            </div>
-            <button type="button" className="pill-ghost" disabled>
-              Replay
-            </button>
-          </div>
-        </div>
+        <Reveal>
+          <DemoAnimation />
+        </Reveal>
       </section>
 
       {/* Core idea */}
       <section className="section" id="how-it-works">
+        <Reveal>
         <div className="core-idea-grid">
           <div>
             <span className="section-eyebrow">The core idea</span>
@@ -134,10 +111,12 @@ export default function Landing() {
             </p>
           </div>
         </div>
+        </Reveal>
       </section>
 
       {/* Prediction */}
       <section className="section">
+        <Reveal>
         <span className="section-eyebrow">Prediction</span>
         <h2 className="prediction-title-two-tone">
           The layout doesn&apos;t change.
@@ -152,6 +131,7 @@ export default function Landing() {
             </div>
           ))}
         </div>
+        </Reveal>
       </section>
 
       {/* Natural speech */}
@@ -168,6 +148,7 @@ export default function Landing() {
           sequence into fluent speech — never adding meaning you didn&apos;t tap.
         </p>
 
+        <Reveal>
         <div className="speech-examples">
           {speechExamples.map((ex) => (
             <div key={ex.quote} className="speech-example">
@@ -181,10 +162,12 @@ export default function Landing() {
             </div>
           ))}
         </div>
+        </Reveal>
       </section>
 
       {/* CTA banner */}
       <div className="cta-banner">
+        <Reveal>
         <div className="cta-banner-inner">
           <h2 className="cta-banner-title">Say it in three taps.</h2>
           <p className="cta-banner-subtitle">
@@ -193,6 +176,7 @@ export default function Landing() {
           </p>
           <Link href="/board" className="cta-banner-btn">Open the board</Link>
         </div>
+        </Reveal>
       </div>
     </main>
   );
