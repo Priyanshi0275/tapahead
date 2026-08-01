@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import Link from 'next/link';
 import { TILES, CATEGORIES } from '@/lib/tiles';
 import { getSuggestions, recordTap } from '@/lib/ranking';
 import { loadState, saveState, resetState } from '@/lib/storage';
@@ -172,6 +173,7 @@ export default function Home() {
 
   return (
     <main className="app">
+      <Link href="/" className="board-back-link">← Home</Link>
       <header className="app-header">
         <div>
           <h1 className="app-title">TapAhead</h1>
