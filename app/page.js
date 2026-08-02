@@ -1,8 +1,7 @@
 import Link from 'next/link';
 import DemoAnimation from '@/components/DemoAnimation';
 import Reveal from '@/components/Reveal';
-
-const coreGridWords = ['I', 'want', 'water', 'more', 'help', 'please', 'yes', 'no'];
+import CoreIdeaDemo from '@/components/CoreIdeaDemo';
 
 const predictionCards = [
   {
@@ -42,9 +41,11 @@ export default function Landing() {
 
       {/* Hero */}
       <section className="hero">
-        <span className="hero-watermark hero-watermark-1">water</span>
-        <span className="hero-watermark hero-watermark-2">later</span>
-        <span className="hero-watermark hero-watermark-3">outside</span>
+        <span className="hero-watermark hero-watermark-1">thank you</span>
+        <span className="hero-watermark hero-watermark-2">please</span>
+        <span className="hero-watermark hero-watermark-3">water</span>
+        <span className="hero-watermark hero-watermark-4">later</span>
+        <span className="hero-watermark hero-watermark-5">outside</span>
 
         <div className="hero-inner">
           <span className="section-eyebrow" style={{ justifyContent: 'center' }}>
@@ -82,56 +83,28 @@ export default function Landing() {
       {/* Core idea */}
       <section className="section" id="how-it-works">
         <Reveal>
-        <div className="core-idea-grid">
-          <div>
-            <span className="section-eyebrow">The core idea</span>
-            <h2 className="section-title" style={{ fontSize: 36 }}>
-              Your words stay where they belong.
-            </h2>
-            <p className="core-idea-body">
-              Most adaptive boards reshuffle tiles to &ldquo;help.&rdquo; For someone
-              who taps by muscle memory, that is a new board every morning.
-              TapAhead keeps the grid fixed forever and puts learning in a
-              separate row.
-            </p>
-            <div className="segmented-toggle">
-              <button type="button" className="active">TapAhead</button>
-              <button type="button">Boards that reshuffle</button>
-            </div>
-          </div>
-
-          <div className="mini-board-card">
-            <div className="mini-board-grid">
-              {coreGridWords.map((w) => (
-                <div key={w} className="mini-board-tile">{w}</div>
-              ))}
-            </div>
-            <p className="mini-board-caption">
-              Nothing moves. Ever. Predictions live above the grid.
-            </p>
-          </div>
-        </div>
+          <CoreIdeaDemo />
         </Reveal>
       </section>
 
       {/* Prediction */}
       <section className="section">
-        <Reveal>
         <span className="section-eyebrow">Prediction</span>
         <h2 className="prediction-title-two-tone">
           The layout doesn&apos;t change.
           <span className="dim">Your conversations do.</span>
         </h2>
         <div className="prediction-cards">
-          {predictionCards.map((card) => (
-            <div key={card.index} className="prediction-card">
-              <div className="prediction-index">{card.index}</div>
-              <h3>{card.title}</h3>
-              <p>{card.body}</p>
-            </div>
+          {predictionCards.map((card, i) => (
+            <Reveal key={card.index} delay={i * 120}>
+              <div className="prediction-card">
+                <div className="prediction-index">{card.index}</div>
+                <h3>{card.title}</h3>
+                <p>{card.body}</p>
+              </div>
+            </Reveal>
           ))}
         </div>
-        </Reveal>
       </section>
 
       {/* Natural speech */}

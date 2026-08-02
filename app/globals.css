@@ -173,28 +173,38 @@ button:disabled {
 
 .hero-watermark {
   position: absolute;
-  font-size: 64px;
-  font-weight: 700;
+  font-size: 30px;
+  font-weight: 600;
   color: var(--color-ink);
-  opacity: 0.05;
+  opacity: 0.07;
   z-index: 0;
   pointer-events: none;
   white-space: nowrap;
 }
 
 .hero-watermark-1 {
-  top: 12%;
-  left: 4%;
+  top: 10%;
+  left: 33%;
 }
 
 .hero-watermark-2 {
-  bottom: 18%;
-  left: 8%;
+  top: 14%;
+  right: 6%;
 }
 
 .hero-watermark-3 {
-  bottom: 8%;
-  right: 6%;
+  top: 42%;
+  left: 3%;
+}
+
+.hero-watermark-4 {
+  bottom: 12%;
+  left: 12%;
+}
+
+.hero-watermark-5 {
+  bottom: 6%;
+  right: 14%;
 }
 
 .hero-inner {
@@ -334,12 +344,14 @@ button:disabled {
   padding: 20px;
   box-shadow: var(--shadow-soft);
   margin-top: 48px;
+  text-align: left;
 }
 
 .demo-panel {
   background: var(--color-bg);
   border-radius: var(--radius-md);
   padding: 32px;
+  text-align: left;
 }
 
 .demo-label {
@@ -379,24 +391,11 @@ button:disabled {
   }
 }
 
-.demo-spoken-wrap {
-  display: grid;
-  grid-template-rows: 0fr;
-  transition: grid-template-rows 0.45s ease, margin-top 0.45s ease;
-  margin-top: 0;
-}
-
-.demo-spoken-wrap.visible {
-  grid-template-rows: 1fr;
-  margin-top: 20px;
-}
-
-.demo-spoken-wrap > .demo-spoken {
-  overflow: hidden;
-  min-height: 0;
-}
-
+/* Spoken box only ever mounts once the sentence is ready — box and text
+   always arrive together, never an empty box followed by text. */
 .demo-spoken {
+  animation: demo-spoken-in 0.4s ease;
+  margin-top: 20px;
   background: var(--color-brand-soft);
   border-radius: var(--radius-md);
   padding: 18px 20px;
@@ -425,6 +424,17 @@ button:disabled {
   transform: translateY(0);
 }
 
+@keyframes demo-spoken-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .demo-footer {
   display: flex;
   align-items: center;
@@ -432,6 +442,7 @@ button:disabled {
   flex-wrap: wrap;
   gap: 16px;
   padding: 20px 4px 4px;
+  text-align: left;
 }
 
 .demo-predicted-tiles {
@@ -447,6 +458,12 @@ button:disabled {
   padding: 10px 18px;
   font-weight: 600;
   font-size: 15px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.pill-tile-highlight {
+  border-color: var(--color-brand);
+  box-shadow: 0 0 0 3px var(--color-brand-soft);
 }
 
 .pill-ghost {
@@ -457,6 +474,10 @@ button:disabled {
   font-weight: 600;
   font-size: 14px;
   color: var(--color-ink);
+}
+
+.pill-ghost:hover {
+  background: var(--color-bg);
 }
 
 /* ---------------------------------------------------------------
@@ -522,6 +543,18 @@ button:disabled {
   text-align: center;
   font-weight: 600;
   font-size: 15px;
+  animation: tile-shuffle-in 0.35s ease backwards;
+}
+
+@keyframes tile-shuffle-in {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
 
 .mini-board-caption {
