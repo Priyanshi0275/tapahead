@@ -3,7 +3,7 @@
 TapAhead is an AAC (Augmentative and Alternative Communication) board for
 nonverbal and speech-impaired users. At its center is a language model that
 takes what someone taps out word-by-word and speaks it back as a real,
-natural sentence — solving a problem every AAC user runs into: speaking
+natural sentence, solving a problem every AAC user runs into: speaking
 word-for-word sounds robotic, and that gets in the way of a normal
 conversation.
 
