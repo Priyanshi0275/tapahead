@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 
 const FIXED_ORDER = ['I', 'want', 'water', 'more', 'help', 'please', 'yes', 'no'];
 
@@ -16,18 +16,58 @@ function shuffledCopy(arr) {
 export default function CoreIdeaDemo() {
   const [mode, setMode] = useState('fixed');
   const [words, setWords] = useState(FIXED_ORDER);
-  const [animKey, setAnimKey] = useState(0);
+  const tileRefs = useRef({});
+  const prevRectsRef = useRef({});
+
+  function captureRects() {
+    const rects = {};
+    Object.entries(tileRefs.current).forEach(([word, node]) => {
+      if (node) rects[word] = node.getBoundingClientRect();
+    });
+    return rects;
+  }
+
+  // True FLIP animation: capture each tile's position before the reorder,
+  // let React/the grid reposition them instantly, then for each tile
+  // apply an inverse transform back to its old spot and animate it back
+  // to zero — so it visibly slides from its old position to its new one,
+  // instead of just fading out and back in.
+  useLayoutEffect(() => {
+    const prevRects = prevRectsRef.current;
+
+    Object.entries(tileRefs.current).forEach(([word, node]) => {
+      if (!node) return;
+      const prev = prevRects[word];
+      if (!prev) return;
+
+      const newRect = node.getBoundingClientRect();
+      const dx = prev.left - newRect.left;
+      const dy = prev.top - newRect.top;
+
+      if (dx || dy) {
+        node.style.transition = 'none';
+        node.style.transform = `translate(${dx}px, ${dy}px)`;
+        // eslint-disable-next-line no-unused-expressions
+        node.getBoundingClientRect(); // force reflow before animating back
+        requestAnimationFrame(() => {
+          node.style.transition = 'transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1)';
+          node.style.transform = '';
+        });
+      }
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [words]);
 
   function handleFixed() {
+    prevRectsRef.current = captureRects();
     setMode('fixed');
     setWords(FIXED_ORDER);
-    setAnimKey((k) => k + 1);
   }
 
   function handleReshuffle() {
+    prevRectsRef.current = captureRects();
     setMode('reshuffle');
     setWords(shuffledCopy(FIXED_ORDER));
-    setAnimKey((k) => k + 1);
   }
 
   return (
@@ -62,12 +102,14 @@ export default function CoreIdeaDemo() {
       </div>
 
       <div className="mini-board-card">
-        <div className="mini-board-grid" key={animKey}>
-          {words.map((w, i) => (
+        <div className="mini-board-grid">
+          {words.map((w) => (
             <div
-              key={`${w}-${animKey}`}
+              key={w}
+              ref={(node) => {
+                tileRefs.current[w] = node;
+              }}
               className="mini-board-tile"
-              style={{ animationDelay: `${i * 30}ms` }}
             >
               {w}
             </div>

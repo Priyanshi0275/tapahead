@@ -1,14 +1,21 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
-// Runs once per mount/replay — never auto-loops. Each step either advances
-// the sentence, or briefly highlights the predicted tile about to be
-// picked (so it reads as "this one's about to be selected") before it
-// joins the sentence. `duration: null` marks the terminal step.
+// Predicted-tile row never changes its contents — it's a fixed set that
+// always includes the words this demo needs (I, want, water) plus a
+// couple of filler words for realism. Only the highlighted tile changes,
+// moving to whichever word is about to be picked next.
+const PREDICTED = ['I', 'want', 'water', 'please', 'more'];
+
+// Each step either highlights the tile about to be picked, or adds it to
+// the sentence. `duration: null` marks the terminal step — the sequence
+// stops there and never auto-loops.
 const STEPS = [
-  { words: [], highlight: null, spoken: null, duration: 1100 },
-  { words: ['I'], highlight: null, spoken: null, duration: 800 },
+  { words: [], highlight: null, spoken: null, duration: 900 },
+  { words: [], highlight: 'I', spoken: null, duration: 650 },
+  { words: ['I'], highlight: null, spoken: null, duration: 700 },
+  { words: ['I'], highlight: 'want', spoken: null, duration: 650 },
   { words: ['I', 'want'], highlight: null, spoken: null, duration: 700 },
   { words: ['I', 'want'], highlight: 'water', spoken: null, duration: 650 },
   {
@@ -19,13 +26,36 @@ const STEPS = [
   },
 ];
 
-const PREDICTED = ['want', 'water', 'please', 'more'];
-
 export default function DemoAnimation() {
+  const containerRef = useRef(null);
+  const [hasStarted, setHasStarted] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
   const [runId, setRunId] = useState(0);
 
+  // The sequence is completely idle until this card actually scrolls into
+  // view — it does not play on page load, only when you reach it. Once
+  // triggered, it will not re-trigger just from scrolling away and back;
+  // only the Replay button restarts it.
   useEffect(() => {
+    const node = containerRef.current;
+    if (!node) return undefined;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setHasStarted(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.4 }
+    );
+
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!hasStarted) return undefined;
     const current = STEPS[stepIndex];
     if (current.duration == null) return undefined;
     const timer = setTimeout(() => {
@@ -33,7 +63,7 @@ export default function DemoAnimation() {
     }, current.duration);
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stepIndex, runId]);
+  }, [hasStarted, stepIndex, runId]);
 
   const step = STEPS[stepIndex];
 
@@ -43,7 +73,7 @@ export default function DemoAnimation() {
   }
 
   return (
-    <div className="demo-card">
+    <div className="demo-card" ref={containerRef}>
       <div className="demo-panel">
         <span className="demo-label">Your sentence</span>
         <p className="demo-sentence">

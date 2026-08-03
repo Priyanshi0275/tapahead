@@ -96,7 +96,7 @@ export default function Landing() {
         </h2>
         <div className="prediction-cards">
           {predictionCards.map((card, i) => (
-            <Reveal key={card.index} delay={i * 120}>
+            <Reveal key={card.index} delay={i * 220}>
               <div className="prediction-card">
                 <div className="prediction-index">{card.index}</div>
                 <h3>{card.title}</h3>
