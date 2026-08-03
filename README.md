@@ -192,6 +192,4 @@ vercel --prod
 - **Licensed AAC symbol sets** — tiles use emoji for speed; production
   AAC apps typically use ARASAAC or PCS symbol libraries.
 
----
 
-Built for the Razorpay AI Builders challenge.
