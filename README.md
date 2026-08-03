@@ -1,4 +1,4 @@
-# TapAhead — Adaptive AAC Communication Board
+**# TapAhead — Adaptive AAC Communication Board
 
 A communication board for nonverbal / speech-impaired users that **learns
 how you talk**, so the words you need next are predicted and surfaced
@@ -183,3 +183,4 @@ hurts usability — users build spatial muscle memory and tap without
 looking. So instead of reordering everything, TapAhead keeps the main grid
 completely stable and adds one small, clearly-separated prediction row.
 That's a deliberate trade-off, not a missing feature.
+**
