@@ -30,18 +30,6 @@ serverless function that calls **Groq's `llama-3.1-8b-instant`** with one
 job: rewrite the sequence as a single, natural, grammatically correct
 sentence — without inventing anything the user didn't tap.
 
-```
-system: "You help an AAC (assistive communication) user speak naturally.
-You will receive a short sequence of tapped words representing what they
-want to say telegraphically. Rewrite it as ONE short, natural,
-grammatically correct spoken sentence that preserves their exact intended
-meaning. Do not add new information or change the meaning. Reply with
-ONLY the sentence — no quotes, no explanation."
-
-user: "Words: I, want, water"
-→ "I'd like some water, please."
-```
-
 More examples straight from the app:
 
 | Tapped | Spoken |
