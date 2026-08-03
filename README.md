@@ -1,186 +1,209 @@
-**# TapAhead — Adaptive AAC Communication Board
+# TapAhead — AI that turns taps into speech
 
-A communication board for nonverbal / speech-impaired users that **learns
-how you talk**, so the words you need next are predicted and surfaced
-automatically — without ever moving the main grid (which would break the
-muscle-memory tapping that real AAC users rely on).
+TapAhead is an AAC (Augmentative and Alternative Communication) board for
+nonverbal and speech-impaired users. At its center is a language model that
+takes what someone taps out word-by-word and speaks it back as a real,
+natural sentence — solving a problem every AAC user runs into: speaking
+word-for-word sounds robotic, and that gets in the way of a normal
+conversation.
 
-It also uses a real LLM to turn telegraphic taps like `I want water` into
-a natural spoken sentence like *"I'd like some water, please"* — because
-speaking word-for-word sounds robotic, which is a real, documented
-frustration for AAC users trying to have a normal conversation.
+**Live site:** `https://tapahead.vercel.app` — lands on an explainer page first,
+"Open the board" goes to the actual working app.
 
-## Features
+---
 
-- **Predictive suggestion row** — a small, statistics-driven ranking engine
-  (see "How the prediction works" below) — no LLM involved here, this is
-  pure on-device logic.
-- **AI sentence naturalization** — an LLM call (Groq, `llama-3.1-8b-instant`,
-  the same setup used in MindTrace) turns your tapped words into a natural
-  sentence before it's spoken aloud. Fails safe: if the API key is missing,
-  the request times out, or anything goes wrong, it just speaks your raw
-  tapped words instead — it never blocks you from being heard.
-- **81 vocabulary tiles** across 6 categories, including a dedicated
-  "Connecting Words" category (am, is, the, to, and, with, etc.) so
-  sentences can flow more naturally.
-- **Male/female voice toggle** plus an exact-voice dropdown, since the
-  Web Speech API doesn't officially label voice gender — we guess from
-  common voice names and let you override it.
+## The problem
 
-## How the prediction works
+Tapping out full grammatical sentences one tile at a time is slow, so AAC
+users naturally tap in shorthand — `want water`, `me tired home`. That's
+efficient to type, but it comes out sounding flat and childlike when
+spoken aloud verbatim, which is a real, documented frustration: people
+don't want to sound like a robot when they're just trying to have a
+conversation.
 
-A small "Suggested for you" row above the main grid is ranked live using
-three signals, blended into one score:
+## The AI: turning taps into natural speech
 
-1. **Recency-frequency** — tapped often *and* recently (classic autocomplete
-   logic, with exponential time-decay).
-2. **Time-of-day match** — tiles historically used in the current time
-   window (morning / afternoon / evening / night) get a boost.
-3. **Sequence transition** — a first-order Markov model over your own tap
-   history: "after 'I want', you usually tap 'water'."
+This is the core AI feature of the project, in `app/api/naturalize/route.js`.
 
-All of this runs **on-device**, stored in `localStorage` — no login, no
-server, no account. It starts learning from the very first tap.
+Every time the Speak button is pressed, the tapped sequence is sent to a
+serverless function that calls **Groq's `llama-3.1-8b-instant`** with one
+job: rewrite the sequence as a single, natural, grammatically correct
+sentence — without inventing anything the user didn't tap.
 
-The core logic lives in `lib/ranking.js` — that file alone is worth reading
-if you want to see (or explain to judges) exactly how the scoring works.
+```
+system: "You help an AAC (assistive communication) user speak naturally.
+You will receive a short sequence of tapped words representing what they
+want to say telegraphically. Rewrite it as ONE short, natural,
+grammatically correct spoken sentence that preserves their exact intended
+meaning. Do not add new information or change the meaning. Reply with
+ONLY the sentence — no quotes, no explanation."
 
-## Run it locally
-
-You'll need [Node.js](https://nodejs.org) 18 or newer installed.
-
-```bash
-# 1. Unzip this project, then open a terminal inside the folder
-cd tapahead
-
-# 2. Install dependencies
-npm install
-
-# 3. Get a free Groq API key (needed for the AI sentence naturalization)
-#    -> https://console.groq.com/keys
-#    Copy .env.local.example to .env.local and paste your key in:
-cp .env.local.example .env.local
-# then edit .env.local and replace "your_groq_api_key_here"
-
-# 4. Run the dev server
-npm run dev
+user: "Words: I, want, water"
+→ "I'd like some water, please."
 ```
 
-Open **http://localhost:3000** in your browser. Tap tiles, build a
-sentence, hit "Speak." Without a Groq key, it just speaks your raw tapped
-words (still fully functional) — with a key, it naturalizes the sentence
-first and shows a preview line above the Speak button. Tap the same
-sequences a few times and watch the "Suggested for you" row start
-predicting your next word.
+More examples straight from the app:
 
-## Deploy it to Vercel (so you have a live link to submit)
+| Tapped | Spoken |
+|---|---|
+| `me, tired, home` | "I'm tired — can we go home?" |
+| `you, help, book` | "Could you help me with my book?" |
 
-**Important:** your `.env.local` file stays on your computer only — it is
-never pushed to GitHub or read by Vercel automatically. You need to add
-`GROQ_API_KEY` as an environment variable in Vercel too, or the deployed
-app will just speak raw tapped words (still works, just without the AI
-naturalization).
+**Design choices that matter here:**
+- **`temperature: 0.3`** — low, so the output stays close to a direct
+  rewrite rather than a creative one. This is someone's actual intended
+  speech; the model's job is to sound natural, not to improvise.
+- **The prompt explicitly forbids adding meaning.** An AAC user's words
+  carry real intent — the model is instructed never to guess at
+  unstated details.
+- **It fails safe.** No API key, a slow response, or any error and the
+  route just returns the raw tapped words instead — a broken AI call
+  should never be the reason someone can't be heard. This is a
+  fail-safe, not fail-open, design: silence is worse than an unstyled
+  sentence, but an AI error should never mean total silence.
+- **A preview is always shown**, not just spoken — so the naturalized
+  sentence is visible before and while it's said aloud, not a black box.
 
-**Option A — no GitHub needed, fastest (Vercel CLI):**
+## Why the *rest* of the app deliberately isn't AI
 
-```bash
-# From inside the tapahead folder
-npm install -g vercel
-vercel login
-vercel --prod
-```
+The suggestion row (predicting which tile you'll want next) runs on plain
+statistics in `lib/ranking.js` — recency-weighted frequency, time-of-day
+patterns, and a first-order Markov model of tap sequences. No model, no
+training, entirely on-device.
 
-It'll ask a few questions — accept the defaults (it auto-detects Next.js).
-After it finishes, it prints your live URL, e.g.
-`https://tapahead-yourname.vercel.app`.
+That's a deliberate split, not a missed opportunity to use AI everywhere:
+predicting *which tile* is a narrow, well-defined ranking problem where a
+transparent, explainable rule ("this tile is suggested because it usually
+follows 'want'") is more trustworthy and debuggable for an accessibility
+tool than an opaque model would be. Generating *natural phrasing*,
+though, is a genuinely open-ended language task — exactly where an LLM
+earns its place instead of being used for its own sake.
 
-Then add your Groq key so the deployed version has it too:
+---
 
-```bash
-vercel env add GROQ_API_KEY
-```
+## What else TapAhead does
 
-Paste your key when prompted, select all environments (Production,
-Preview, Development), then redeploy so it picks up the new variable:
+- **The main grid never moves.** Real AAC research shows reshuffling a
+  board breaks the muscle memory users rely on to tap without looking, so
+  predictions live in a separate row above a permanently stable grid. The
+  landing page's "Core idea" section has a live toggle demonstrating
+  exactly why — flip it to "Boards that reshuffle" and watch it scramble.
+- **Predictions are explainable.** Suggested tiles show *why* they were
+  picked (`→ after "want"`, `🕐 morning`, `⭐ frequent`), not just that
+  they were.
+- **81 vocabulary tiles** across 6 categories, color-coded with the
+  **Fitzgerald key** — the real grammatical color-coding convention used
+  on physical AAC boards.
+- **Male/female voice toggle** plus an exact-voice picker, since the Web
+  Speech API doesn't officially label voice gender.
 
-```bash
-vercel --prod
-```
+### How the prediction engine scores tiles
 
-That final URL is the link you paste into the submission form.
+| Signal | What it captures | Weight |
+|---|---|---|
+| Recency & frequency | Tapped often *and* recently, with decay so old habits fade | 0.40 |
+| Time of day | Tiles historically used in the current time window | 0.25 |
+| Sequence transition | Markov model of your own tap history | 0.35 |
 
-**Option B — via GitHub (if you want the project on GitHub too):**
+Cold start is handled explicitly — with no history yet, the row is empty
+rather than showing a meaningless guess. All of it runs in `localStorage`,
+per device — no account, no server required for the board to start
+learning.
 
-1. Create a new empty repo on GitHub (e.g. `tapahead`).
-2. In the project folder:
-   ```bash
-   git init
-   git add .
-   git commit -m "Initial commit"
-   git branch -M main
-   git remote add origin https://github.com/<your-username>/tapahead.git
-   git push -u origin main
-   ```
-3. Go to [vercel.com/new](https://vercel.com/new), click **Import Project**,
-   pick your `tapahead` repo.
-4. Before clicking Deploy, expand **Environment Variables** and add:
-   - Key: `GROQ_API_KEY`
-   - Value: your key from [console.groq.com/keys](https://console.groq.com/keys)
-5. Click **Deploy**. Vercel gives you a live URL in about a minute.
+---
 
-The suggestion engine and tap history run entirely client-side (no setup
-needed for those) — the Groq key is only needed for the AI sentence
-naturalization step.
+## Tech stack
+
+- **Next.js 14** (App Router) — landing page, board, and the naturalize
+  API route in one app
+- **Groq API** (`llama-3.1-8b-instant`) — the AI naturalization call
+- **Plain CSS** (`app/globals.css`) — custom design tokens, no framework
+- **Web Speech API** for text-to-speech — no external TTS cost
+- **localStorage** for on-device learning — no database, no backend state
 
 ## Project structure
 
 ```
 tapahead/
 ├── app/
-│   ├── page.js          # landing page (/) — explains the problem, links to /board
-│   ├── board/page.js    # the actual working board (/board)
-│   ├── api/naturalize/route.js  # LLM call (Groq) that naturalizes tapped words
-│   ├── layout.js       # root layout, loads fonts
-│   └── globals.css     # design tokens + all styling
+│   ├── page.js               # Landing page — problem/solution explainer
+│   ├── board/page.js         # The actual working AAC board
+│   ├── api/naturalize/route.js   # THE AI — Groq call that naturalizes tapped words
+│   ├── layout.js             # Root layout, font loading
+│   └── globals.css           # Design tokens + all styling
 ├── components/
-│   ├── SentenceStrip.js    # sentence-building bar + naturalized preview + Speak
-│   ├── SuggestionRow.js    # the dynamic, predicted-tiles row
-│   ├── CategorySection.js  # one color-coded category block (stable grid)
-│   ├── TileButton.js       # a single tappable tile
-│   └── VoiceSettings.js    # male/female toggle + exact voice picker
+│   ├── DemoAnimation.js      # Scripted, scroll-triggered landing page demo
+│   ├── CoreIdeaDemo.js       # Interactive "stable grid vs reshuffle" toggle
+│   ├── Reveal.js             # Scroll-triggered fade-in wrapper
+│   ├── SentenceStrip.js      # Sentence-building bar + naturalized preview
+│   ├── SuggestionRow.js      # The dynamic, predicted-tiles row
+│   ├── CategorySection.js    # One color-coded category block (stable grid)
+│   ├── TileButton.js         # A single tappable tile
+│   └── VoiceSettings.js      # Male/female toggle + exact voice picker
 ├── lib/
-│   ├── tiles.js         # vocabulary dataset (Fitzgerald-key categories)
-│   ├── ranking.js        # THE CORE STATS LOGIC — scoring, ranking, tap recording
-│   ├── storage.js        # localStorage load/save/reset helpers
-│   └── voices.js          # heuristic male/female voice classification
-├── .env.local.example    # copy to .env.local and add your Groq key
+│   ├── ranking.js            # The (non-AI) prediction engine
+│   ├── tiles.js              # Vocabulary dataset (Fitzgerald-key categories)
+│   ├── storage.js            # localStorage load/save/reset helpers
+│   └── voices.js             # Heuristic male/female voice classification
+├── .env.local.example        # Copy to .env.local and add your Groq key
 └── README.md
 ```
 
-The link you submit is your root domain (e.g. `https://tapahead-yourname.vercel.app`)
-— visitors land on the explainer page first, then click through to `/board`
-to actually use it.
+---
 
-## If you want to extend it further
+## Running it locally
 
-- **Cross-device sync**: currently all learning is per-device via
-  `localStorage`. To sync across devices, swap `lib/storage.js` for calls to
-  a small backend (Vercel KV is a fast, free option — no schema migrations,
-  just key-value).
-- **Context/location awareness**: add a 4th ranking signal using the
-  Geolocation API — boost tiles relevant to saved places (e.g. "home,"
-  "school").
-- **Real AAC symbol sets**: tiles currently use emoji as icons for speed.
-  Production AAC apps use licensed symbol sets like ARASAAC or PCS — worth
-  mentioning as a "next step" if judges ask.
-- **Caregiver view**: a simple dashboard showing which tiles/phrases are
-  used most, which could help caregivers/therapists notice patterns.
+Requires [Node.js](https://nodejs.org) 18+.
 
-## Why this design (in case a judge asks)
+```bash
+git clone <your repo URL>
+cd tapahead
+npm install
+```
 
-Real AAC research is clear that **fully reshuffling** a communication grid
-hurts usability — users build spatial muscle memory and tap without
-looking. So instead of reordering everything, TapAhead keeps the main grid
-completely stable and adds one small, clearly-separated prediction row.
-That's a deliberate trade-off, not a missing feature.
-**
+Get a free Groq API key at [console.groq.com/keys](https://console.groq.com/keys),
+then:
+
+```bash
+cp .env.local.example .env.local
+# edit .env.local and paste your key in place of the placeholder
+npm run dev
+```
+
+Open **http://localhost:3000**. Without a Groq key, the board still works
+fully — it just speaks your raw tapped words instead of a naturalized
+sentence, since the naturalize route fails safe.
+
+## Deploying to Vercel
+
+```bash
+npm install -g vercel
+vercel login
+vercel --prod
+```
+
+Then add the Groq key to the deployed environment too (`.env.local` never
+gets pushed or read by Vercel automatically):
+
+```bash
+vercel env add GROQ_API_KEY
+# paste your key, select all environments
+vercel --prod
+```
+
+## Extending this further
+
+- **Streaming naturalization** — stream the Groq response so the spoken
+  sentence starts as soon as it's ready, instead of waiting for the full
+  completion.
+- **Personalized phrasing** — fine-tune the naturalization prompt per
+  user (formality, regional phrasing) based on how they've edited/spoken
+  past suggestions.
+- **Cross-device sync** — swap `lib/storage.js` for a small backend
+  (Vercel KV is a fast, free, schema-less option).
+- **Licensed AAC symbol sets** — tiles use emoji for speed; production
+  AAC apps typically use ARASAAC or PCS symbol libraries.
+
+---
+
+Built for the Razorpay AI Builders challenge.
